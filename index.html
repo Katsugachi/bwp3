@@ -137,6 +137,19 @@
     }
   </script>
   <script type="text/javascript" src="game.js?v=d7e34743-2fea-4de6-8a0e-1103b5fcf07f"></script>
+
+  <script>
+    // Ensure love.js locates the correct wasm file before it is loaded.
+    Module = Module || {};
+    Module.locateFile = function(path, scriptDirectory) {
+      if (path.endsWith('.wasm')) {
+        // Adjust the return value if you put the wasm in a subfolder.
+        return scriptDirectory + 'love.wasm';
+      }
+      return scriptDirectory + path;
+    };
+  </script>
+
   <script async type="text/javascript" src="love.js" onload="applicationLoad(this)"></script>
   <!-- <footer>
       <p>Built with <a href="https://github.com/Davidobot/love.js">love.js</a> <button onclick="goFullScreen();">Go Fullscreen</button><br>Hint: Reload the page if screen is blank</p>
