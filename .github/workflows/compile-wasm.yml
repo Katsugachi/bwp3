@@ -1,0 +1,36 @@
+name: Compile WAT to WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/wasm-binary
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install wabt
+        run: sudo apt-get update && sudo apt-get install -y wabt
+      - name: Convert WAT to WASM
+        run: |
+          if [ -f love.wasm ]; then
+            # create binary from WAT text
+            cp love.wasm love.wasm.wat.backup
+            wat2wasm love.wasm.wat.backup -o love.wasm || (echo "wat2wasm failed" && exit 1)
+          else
+            echo "love.wasm not found"
+            exit 1
+          fi
+      - name: Verify wasm header
+        run: head -c 4 love.wasm | xxd -p
+      - name: Commit compiled wasm
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add love.wasm love.wasm.wat.backup .gitattributes .nojekyll || true
+          git commit -m "Build: compile love.wasm from WAT (automated)" || echo "nothing to commit"
+          git push origin HEAD:fix/wasm-binary
